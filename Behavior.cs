@@ -36,12 +36,19 @@ namespace IngameScript
                     if (value && !coroutine.IsRunning)
                     {
                         coroutine = this.program.startCoroutine(Exec());
+                        Enable(value);
                     }
                     else if (!value && coroutine.IsRunning)
                     {
                         coroutine.Stop();
+                        Enable(value);
                     }
                 }
+            }
+
+            virtual public void Enable(bool val)
+            {
+
             }
 
             public Behavior(Program program)

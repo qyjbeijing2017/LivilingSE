@@ -23,7 +23,6 @@ namespace IngameScript
     partial class Program
     {
         List<IEnumerator> enumerators = new List<IEnumerator>();
-        List<IEnumerator> outEnumerators = new List<IEnumerator>();
 
 
         System.DateTime _lastTime = System.DateTime.UtcNow;
@@ -31,17 +30,21 @@ namespace IngameScript
 
         double deltaTime { get { return (_nowTime - _lastTime).Milliseconds / 1000f; } }
 
+        bool isStart(UpdateType updateSource)
+        {
+            return (updateSource & (UpdateType.Mod | UpdateType.IGC | UpdateType.Script | UpdateType.Terminal | UpdateType.Trigger)) != 0;
+        }
 
         // 异步运行多个协程
         void RunCoroutines(string argument, UpdateType updateSource)
         {
             _nowTime = System.DateTime.UtcNow;
-            if ((updateSource & (UpdateType.Update1 | UpdateType.Update10 | UpdateType.Update100)) == 0)
+            if (isStart(updateSource))
             {
                 _lastTime = _nowTime;
             }
 
-            outEnumerators.Clear();
+            List<IEnumerator> outEnumerators = new List<IEnumerator>();
             foreach (var enumerator in enumerators)
             {
                 if (enumerator.MoveNext())
@@ -100,14 +103,13 @@ namespace IngameScript
             public static IEnumerator All(params Coroutine[] coroutines)
             {
                 List<IEnumerator> inEnumerators = new List<IEnumerator>();
-                List<IEnumerator> outEnumerators = new List<IEnumerator>();
                 foreach (var coroutine in coroutines)
                 {
                     inEnumerators.Add(coroutine.GetEnumerator());
                 }
                 while (inEnumerators.Count > 0)
                 {
-                    outEnumerators.Clear();
+                    List<IEnumerator> outEnumerators = new List<IEnumerator>();
                     foreach (var enumerator in inEnumerators)
                     {
                         if (enumerator.MoveNext())

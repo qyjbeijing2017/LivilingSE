@@ -39,6 +39,14 @@ namespace IngameScript
                 }
             }
 
+            public override void Enable(bool val)
+            {
+                if (!val)
+                {
+                    control = false;
+                }
+            }
+
             public Liviling(Program program, double TimeStep = 1.0 / 60.0) : base(program)
             {
                 _pid = new PID(2.0, 0.0, 0.0, TimeStep);
@@ -68,12 +76,17 @@ namespace IngameScript
 
             public override void Update()
             {
-                if (_cockpit.RollIndicator >= 0.03 || _cockpit.RotationIndicator.Length() >= 0.03)
+                if (Math.Abs(_cockpit.RollIndicator) >= 0.03 || _cockpit.RotationIndicator.Length() >= 0.03)
                 {
                     control = false;
                     return;
                 }
                 var gravityd = _cockpit.GetNaturalGravity();
+                if (gravityd.Length() <= 0.003)
+                {
+                    control = false;
+                    return;
+                }
 
                 // 转到飞船坐标
                 var world2Ship = MatrixD.CreateLookAt(new Vector3(), _cockpit.WorldMatrix.Forward, _cockpit.WorldMatrix.Up);
@@ -109,7 +122,6 @@ namespace IngameScript
                     gyro.Pitch = currentEular.X;
                     gyro.Yaw = currentEular.Y;
                     gyro.Roll = currentEular.Z;
-
                 }
             }
         }
